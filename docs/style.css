@@ -1,6 +1,6 @@
 .bracket {
   position: relative;
-  width: 10px;
+  width: 5px;
 }
 .bracket::before {
   content: "";
@@ -19,4 +19,12 @@
 .matrix {
   display: inline-block;
   vertical-align: bottom;
+  text-align: right;
+  border-spacing: 0;
+}
+.highlight {
+  background-color: paleturquoise;
+}
+canvas {
+  margin: 20px;
 }
