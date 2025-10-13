@@ -7,9 +7,9 @@
 </head>
 <body>
   <form>
-    s=<input type="number" id="s" min="0" max="99" value="2">
-    &sigma;=<input id="sigma" oninput="sigma2tau()" value="1">
-    &tau;=<input id="tau" oninput="tau2sigma()" value="12"> hour
+    s=<input type="number" id="s" min="0" max="99" value="1">
+    &sigma;=<input id="sigma" oninput="sigma2tau()" value="0.5">
+    &tau;=<input id="tau" oninput="tau2sigma()" value="24"> hour
     <input type="button" value="Calculate" onclick="calc_eigen()">
   </form>
 
@@ -59,6 +59,13 @@
     </tr>
   </table>
   <table class="matrix" id="X1">
+    <tr name="x1">
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+    </tr>
     <tr name="x1">
       <td></td>
       <td>h</td>

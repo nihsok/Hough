@@ -50,18 +50,21 @@ function calc_eigen(){
   const vector = ans.eigenvectors
   const x1 = document.getElementsByName('x1')
   let a_sym = []
+  let n_p = -1
+  let n_n = 1
   for (let i=1;i<=10;i++){
-    x1[0].cells[i+2].innerText =(lambda[len_sym-i]*ev2ed).toFixed(1)
-    x1[1].cells[i+2].innerText = lambda[len_sym-i].toFixed(4)
+    x1[0].cells[i+2].innerHTML = 'Θ<sub>'+String(lambda[len_sym-i]>0 ? n_p+=2 : n_n-=2)+'</sub><sup>('+String(s)+','+String(sigma)+')</sup>'
+    x1[1].cells[i+2].innerText =(lambda[len_sym-i]*ev2ed).toFixed(1)
+    x1[2].cells[i+2].innerText = lambda[len_sym-i].toFixed(4)
     if (lambda[len_sym-i]<0){
-      x1[0].cells[i+2].innerHTML = '<i>'+x1[0].cells[i+2].innerText+'</i>'
       x1[1].cells[i+2].innerHTML = '<i>'+x1[1].cells[i+2].innerText+'</i>'
+      x1[2].cells[i+2].innerHTML = '<i>'+x1[2].cells[i+2].innerText+'</i>'
     }
-    x1[2].cells[i+2].innerText = vector[len_sym-i].vector._data[0].toFixed(3)
-    x1[3].cells[i].innerText = vector[len_sym-i].vector._data[1].toFixed(3)
-    x1[4].cells[i].innerText = vector[len_sym-i].vector._data[2].toFixed(3)
-    x1[5].cells[i].innerText = vector[len_sym-i].vector._data[3].toFixed(3)
-    x1[6].cells[i].innerText = '⋮'
+    x1[3].cells[i+2].innerText = vector[len_sym-i].vector._data[0].toFixed(3)
+    x1[4].cells[i].innerText = vector[len_sym-i].vector._data[1].toFixed(3)
+    x1[5].cells[i].innerText = vector[len_sym-i].vector._data[2].toFixed(3)
+    x1[6].cells[i].innerText = vector[len_sym-i].vector._data[3].toFixed(3)
+    x1[7].cells[i].innerText = '⋮'
 
     a_sym[i-1] = vector[len_sym-i].vector._data
   }
@@ -72,16 +75,16 @@ function calc_eigen(){
     if(!cell) return
     const colIndex = cell.cellIndex
     const rowIndex = cell.parentNode.rowIndex
-    if(colIndex-(rowIndex>2 ? 1 : 3) === currentindex) return
-    if(rowIndex<3 && colIndex<3 || rowIndex>2 && colIndex<1) return
+    if(colIndex-(rowIndex>3 ? 1 : 3) === currentindex) return
+    if(rowIndex<4 && colIndex<3 || rowIndex>3 && colIndex<1) return
     if(currentindex !== null){
       Array.from(table.rows).forEach((row,i)=>{
-        row.cells[currentindex+(i>2 ? 1 : 3)].classList.remove("highlight")
+        row.cells[currentindex+(i>3 ? 1 : 3)].classList.remove("highlight")
       })
     }
-    currentindex = colIndex-(rowIndex>2 ? 1 : 3)
+    currentindex = colIndex-(rowIndex>3 ? 1 : 3)
     Array.from(table.rows).forEach((row,i)=>{
-      row.cells[colIndex-(i>2 ? 2 : 0)+(rowIndex>2 ? 2 : 0)].classList.add("highlight")
+      row.cells[colIndex-(i>3 ? 2 : 0)+(rowIndex>3 ? 2 : 0)].classList.add("highlight")
     })
     plot_hough(s,0,a_sym[currentindex])
   })
@@ -97,8 +100,8 @@ async function loadLegendre(){
 
 const canvas = document.getElementById("canvas")
 const margin = {bottom:10,top:10,left:20,right:10}
-const plot_height = canvas.height-margin.left-margin.top
-const plot_width = canvas.width-margin.left-margin.right
+const plot_height = canvas.height - margin.left - margin.top
+const plot_width = canvas.width - margin.left - margin.right
 const ctx = canvas.getContext('2d')
 ctx.translate(plot_width/2+margin.left,plot_height/2+margin.top)
 ctx.font = '20px sans-serif'
@@ -114,8 +117,8 @@ function plot_hough(s,flag_asymmetric,coef){
   const nlat = 91
   const m_max = 90
   let hough = new Float64Array(nlat)
-  for (let i=flag_asymmetric;i<n/2;i++){
-    const start = s*m_max*m_max+2*i*nlat
+  for (let i=flag_asymmetric;i<50;i++){//n/2;i++){
+    const start = s*m_max*nlat+2*i*nlat
     const slice = p_r_s.subarray(start,start+nlat)
     for (let j=0;j<nlat;j++){
       hough[j]+= coef[i]*slice[j]
@@ -130,6 +133,18 @@ function plot_hough(s,flag_asymmetric,coef){
   ctx.restore()
   ctx.lineWidth = 2
   ctx.strokeRect(scaleX(-90),scaleY(-3),scaleX(180),scaleY(6))
+  for (let i=-90;i<=90;i+=10){
+    ctx.beginPath()
+    ctx.moveTo(scaleX(i),scaleY(-3))
+    ctx.lineTo(scaleX(i),scaleY(-3.05))
+    ctx.stroke()
+  }
+  for (let i=-3;i<=3;i+=0.2){
+    ctx.beginPath()
+    ctx.moveTo(scaleX(-90),scaleY(i))
+    ctx.lineTo(scaleX(-90.5),scaleY(i))
+    ctx.stroke()
+  }
   ctx.lineWidth = 0.5
   ctx.setLineDash([3,3])
   for (let i=-60;i<90;i+=30){
@@ -137,7 +152,7 @@ function plot_hough(s,flag_asymmetric,coef){
     ctx.moveTo(scaleX(i),scaleY(-3))
     ctx.lineTo(scaleX(i),scaleY(3))
     ctx.stroke()
-    ctx.fillText(String(i)+'°',scaleX(i),scaleY(-3.3))
+    ctx.fillText(String(i).padStart(3,' ')+'°',scaleX(i),scaleY(-3.3))
   }
   for (let i=-2;i<3;i+=1){
     ctx.beginPath()
