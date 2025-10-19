@@ -7,7 +7,7 @@
 </head>
 <body>
   <form>
-    s=<input type="number" id="s" min="0" max="99" value="1">
+    s=<input type="number" id="s" min="0" max="90" value="1">
     &sigma;=<input id="sigma" oninput="sigma2tau()" value="0.5">
     &tau;=<input id="tau" oninput="tau2sigma()" value="24"> hour
     <input type="button" value="Calculate" onclick="calc_eigen()">
@@ -15,20 +15,22 @@
 
   <table class="matrix">
     <tr name="F1_row">
-      <td rowspan="5">F<sub>1</sub>=</td>
-      <td rowspan="5" class="bracket left"></td>
+      <td rowspan="6">F<sub>1</sub>=</td>
+      <td rowspan="6" class="bracket left"></td>
       <td>M<sub>s</sub></td>
       <td>L<sub>s</sub></td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
+      <td>0</td>
       <td>⋯</td>
-      <td rowspan="5" class="bracket right"></td>
+      <td rowspan="6" class="bracket right"></td>
     </tr>
     <tr name="F1_row">
       <td>L<sub>s</sub></td>
       <td>M<sub>s+2</sub></td>
       <td>L<sub>s+2</sub></td>
+      <td>0</td>
       <td>0</td>
       <td>0</td>
       <td>⋯</td>
@@ -39,6 +41,7 @@
       <td>M<sub>s+4</sub></td>
       <td>L<sub>s+4</sub></td>
       <td>0</td>
+      <td>0</td>
       <td>⋯</td>
     </tr>
     <tr name="F1_row">
@@ -47,9 +50,20 @@
       <td>L<sub>s+4</sub></td>
       <td>M<sub>s+6</sub></td>
       <td>L<sub>s+6</sub></td>
+      <td>0</td>
+      <td>⋯</td>
+    </tr>
+    <tr name="F1_row">
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>L<sub>s+6</sub></td>
+      <td>M<sub>s+8</sub></td>
+      <td>L<sub>s+8</sub></td>
       <td>⋯</td>
     </tr>
     <tr>
+      <td>⋮</td>
       <td>⋮</td>
       <td>⋮</td>
       <td>⋮</td>
@@ -65,11 +79,21 @@
       <td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+    <tr name="x1">
+      <td></td>
+      <td>&Lambda;</td>
+      <td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
     </tr>
     <tr name="x1">
       <td></td>
       <td>h</td>
       <td></td>
+      <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
     </tr>
@@ -79,11 +103,13 @@
       <td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
     </tr>
     <tr name="x1">
-      <td rowspan="5" class="bracket left"></td>
+      <td rowspan="6" class="bracket left"></td>
       <td>a<sub>1</sub></td>
-      <td rowspan="5" class="bracket right"></td>
+      <td rowspan="6" class="bracket right"></td>
+      <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
     </tr>
@@ -91,9 +117,11 @@
       <td>a<sub>2</sub></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
     </tr>
     <tr name="x1">
       <td>a<sub>3</sub></td>
+      <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
     </tr>
@@ -101,9 +129,17 @@
       <td>a<sub>4</sub></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+    <tr name="x1">
+      <td>a<sub>5</sub></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td><td></td>
     </tr>
     <tr name="x1">
       <td>⋮</td>
+      <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
     </tr>

@@ -28,11 +28,11 @@ function calc_eigen(){
 
   //symmetric mode
   const row = document.getElementsByName('F1_row')
-  for (let i=0;i<4;i++){
+  for (let i=0;i<5;i++){
     let j = i==0 ? 2+i : i //rowspan for the first row
     row[i].cells[j].innerText = M[i*2].toFixed(3)
     row[i].cells[j+1].innerText = L[i*2].toFixed(3)
-    if(i<3) row[i+1].cells[i].innerText = L[i*2].toFixed(3)
+    if(i<4) row[i+1].cells[i].innerText = L[i*2].toFixed(3)
   }
 
   const len_sym = s%2==0 ? (n-s+2)/2 : (n-s+1)/2
@@ -50,21 +50,23 @@ function calc_eigen(){
   const vector = ans.eigenvectors
   const x1 = document.getElementsByName('x1')
   let a_sym = []
-  let n_p = -1
-  let n_n = 1
-  for (let i=1;i<=10;i++){
-    x1[0].cells[i+2].innerHTML = 'Θ<sub>'+String(lambda[len_sym-i]>0 ? n_p+=2 : n_n-=2)+'</sub><sup>('+String(s)+','+String(sigma)+')</sup>'
-    x1[1].cells[i+2].innerText =(lambda[len_sym-i]*ev2ed).toFixed(1)
-    x1[2].cells[i+2].innerText = lambda[len_sym-i].toFixed(4)
+  let n_p = s-2
+  let n_n = s
+  for (let i=1;i<=15;i++){
+    x1[0].cells[i+2].innerHTML = 'Θ<sub>'+String(lambda[len_sym-i]>0 ? n_p+=2 : n_n-=2)+'</sub><sup>'+String(s)+','+String(sigma)+'</sup>'
+    x1[1].cells[i+2].innerHTML = (4*Math.PI*7000/Math.sqrt(8000/(lambda[len_sym-i]*ev2ed)-1)).toFixed(1)
+    x1[2].cells[i+2].innerText =(lambda[len_sym-i]*ev2ed).toFixed(1)
+    x1[3].cells[i+2].innerText = lambda[len_sym-i].toFixed(4)
     if (lambda[len_sym-i]<0){
-      x1[1].cells[i+2].innerHTML = '<i>'+x1[1].cells[i+2].innerText+'</i>'
       x1[2].cells[i+2].innerHTML = '<i>'+x1[2].cells[i+2].innerText+'</i>'
+      x1[3].cells[i+2].innerHTML = '<i>'+x1[3].cells[i+2].innerText+'</i>'
     }
-    x1[3].cells[i+2].innerText = vector[len_sym-i].vector._data[0].toFixed(3)
-    x1[4].cells[i].innerText = vector[len_sym-i].vector._data[1].toFixed(3)
-    x1[5].cells[i].innerText = vector[len_sym-i].vector._data[2].toFixed(3)
-    x1[6].cells[i].innerText = vector[len_sym-i].vector._data[3].toFixed(3)
-    x1[7].cells[i].innerText = '⋮'
+    x1[4].cells[i+2].innerText = vector[len_sym-i].vector._data[0].toFixed(3)
+    x1[5].cells[i].innerText = vector[len_sym-i].vector._data[1].toFixed(3)
+    x1[6].cells[i].innerText = vector[len_sym-i].vector._data[2].toFixed(3)
+    x1[7].cells[i].innerText = vector[len_sym-i].vector._data[3].toFixed(3)
+    x1[8].cells[i].innerText = vector[len_sym-i].vector._data[4].toFixed(3)
+    x1[9].cells[i].innerText = '⋮'
 
     a_sym[i-1] = vector[len_sym-i].vector._data
   }
@@ -75,16 +77,16 @@ function calc_eigen(){
     if(!cell) return
     const colIndex = cell.cellIndex
     const rowIndex = cell.parentNode.rowIndex
-    if(colIndex-(rowIndex>3 ? 1 : 3) === currentindex) return
-    if(rowIndex<4 && colIndex<3 || rowIndex>3 && colIndex<1) return
+    if(colIndex-(rowIndex>4 ? 1:3) === currentindex) return
+    if(rowIndex<5 && colIndex<3 || rowIndex>4 && colIndex<1) return
     if(currentindex !== null){
       Array.from(table.rows).forEach((row,i)=>{
-        row.cells[currentindex+(i>3 ? 1 : 3)].classList.remove("highlight")
+        row.cells[currentindex+(i>4 ? 1:3)].classList.remove("highlight")
       })
     }
-    currentindex = colIndex-(rowIndex>3 ? 1 : 3)
+    currentindex = colIndex-(rowIndex>4 ? 1:3)
     Array.from(table.rows).forEach((row,i)=>{
-      row.cells[colIndex-(i>3 ? 2 : 0)+(rowIndex>3 ? 2 : 0)].classList.add("highlight")
+      row.cells[colIndex-(i>4 ? 2:0)+(rowIndex>4 ? 2:0)].classList.add("highlight")
     })
     plot_hough(s,0,a_sym[currentindex])
   })
@@ -117,7 +119,7 @@ function plot_hough(s,flag_asymmetric,coef){
   const nlat = 91
   const m_max = 90
   let hough = new Float64Array(nlat)
-  for (let i=flag_asymmetric;i<50;i++){//n/2;i++){
+  for (let i=flag_asymmetric;i<n/2;i++){//n/2;i++){
     const start = s*m_max*nlat+2*i*nlat
     const slice = p_r_s.subarray(start,start+nlat)
     for (let j=0;j<nlat;j++){
