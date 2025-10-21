@@ -7,9 +7,9 @@
 </head>
 <body>
   <form>
-    s=<input type="number" id="s" min="0" max="90" value="1">
-    &sigma;=<input id="sigma" oninput="sigma2tau()" value="0.5">
-    &tau;=<input id="tau" oninput="tau2sigma()" value="24"> hour
+    s=<input type="number" id="s" min="0" max="90" value="3">
+    &sigma;=<input id="sigma" oninput="sigma2tau()" value="1.5">
+    &tau;=<input id="tau" oninput="tau2sigma()" value="8"> hour
     <input type="button" value="Calculate" onclick="calc_eigen()">
   </form>
 
@@ -88,6 +88,7 @@
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td>[km]</td>
     </tr>
     <tr name="x1">
       <td></td>
@@ -96,6 +97,7 @@
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td></td><td></td><td></td><td></td><td></td>
+      <td>[m]</td>
     </tr>
     <tr name="x1">
       <td></td>
@@ -148,5 +150,18 @@
     <span id="mode"></span>
     <canvas id="canvas" width="600" height="300"></canvas>
   </div>
+
+  <details>
+    <summary>Θ</summary>
+    <p id="Hough_T"></p>
+  </details>
+  <details>
+    <summary>Θ<sub>u</sub></summary>
+    <p id="Hough_U"></p>
+  </details>
+  <details>
+    <summary>Θ<sub>v</sub></summary>
+    <p id="Hough_V"></p>
+  </details>
 </body>
 </html>
