@@ -28,3 +28,9 @@
 canvas {
   margin: 20px;
 }
+label.hough_u{
+  color: red;
+}
+label.hough_v{
+  color: blue;
+}

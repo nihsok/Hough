@@ -92,17 +92,17 @@ function calc_eigen(){
       row.cells[colIndex-(i>4 ? 2:0)+(rowIndex>4 ? 2:0)].classList.add("highlight")
     })
     currentindex = colIndex-(rowIndex>4 ? 1:3)
-    plot_hough(s,0,a_sym[currentindex])
+    plot_hough(s,sigma,0,a_sym[currentindex])
   })
-  table_x1.addEventListener('mouseleave', e=>{
-    currentindex = null
-    e.target.closest('table').querySelectorAll("td").forEach(cell=>{
-      cell.classList.remove("highlight")
-    })
-  })
+  // table_x1.addEventListener('mouseleave', e=>{
+  //   currentindex = null
+  //   e.target.closest('table').querySelectorAll("td").forEach(cell=>{
+  //     cell.classList.remove("highlight")
+  //   })
+  // })
 
 
-  //antisymmetric mode
+  //antisymmetric mode //the other is not renewed problem
   const row_F2 = document.getElementsByName('F2_row')
   const len_asym = s%2==0 ? (rmax-s+2)/2-1 : (rmax-s+1)/2-1//?
   const f2 = math.zeros(len_asym,len_asym)
@@ -167,7 +167,7 @@ function calc_eigen(){
       row.cells[colIndex-(i>4 ? 2:0)+(rowIndex>4 ? 2:0)].classList.add("highlight")
     })
     currentindex = colIndex-(rowIndex>4 ? 1:3)
-    plot_hough(s,1,a_asym[currentindex])
+    plot_hough(s,sigma,1,a_asym[currentindex])
   })
 }
 
@@ -179,7 +179,7 @@ async function loadLegendre(){
 }
 
 const canvas = document.getElementById("canvas")
-const margin = {bottom:10,top:10,left:20,right:10}
+const margin = {bottom:10,top:10,left:20,right:50}
 const plot_height = canvas.height - margin.left - margin.top
 const plot_width = canvas.width - margin.left - margin.right
 const scaleX = (x) => x*plot_width/180
@@ -191,7 +191,7 @@ ctx.textAlign = 'center'
 ctx.textBaseline = 'middle'
 ctx.save()
 
-function plot_hough(s,flag_asymmetric,coef){
+function plot_hough(s,sigma,flag_asymmetric,coef){
   const nlat = 91
   const m_max = 90
   let hough = new Float64Array(nlat)
@@ -199,17 +199,42 @@ function plot_hough(s,flag_asymmetric,coef){
     const start = (s*m_max+2*i-(flag_asymmetric===0 ? 0:1))*nlat
     const slice = p_r_s.subarray(start,start+nlat)
     for (let j=0;j<nlat;j++){
-      hough[j]+= coef[flag_asymmetric===0 ? i: i-1]*slice[j]
+      hough[j]+= coef[flag_asymmetric===0 ? i:i-1]*slice[j]
     }
-    console.log(i,coef[i-1],slice)
+    //console.log(i,coef[i-1],slice)
   }
   const hough_t = Array.from(hough.subarray(1).map(e => e*(flag_asymmetric === 0 ? 1:-1))).reverse().concat(Array.from(hough))
   const hough_u = []
   const hough_v = []
+  const mu = Array.from(Array(nlat*2-1),(_,i)=>Math.sin(Math.PI*(i-90)/180))
+
+  let dtdm = (hough_t[1]-0)/(mu[1]-mu[0])
+  let factor = Math.sqrt(1-mu[1]**2)/(sigma**2-mu[1]**2)
+  hough_u[0] = factor*(s/(1-mu[1]**2)*hough_t[1] - mu[1]/sigma*dtdm)
+  hough_v[0] = factor*(s*mu[1]/(sigma*(1-mu[1]**2))*hough_t[1] - dtdm)
+  for (let i=1;i<hough_t.length-1;i++){
+    const dtdm = (hough_t[i+1]-hough_t[i-1])/(mu[i+1]-mu[i-1])
+    const factor = Math.sqrt(1-mu[i]**2)/(sigma**2-mu[i]**2)
+    hough_u[i] = factor*(s/(1-mu[i]**2)*hough_t[i] - mu[i]/sigma*dtdm)
+    hough_v[i] = factor*(s*mu[i]/(sigma*(1-mu[i]**2))*hough_t[i] - dtdm)
+  }
+  dtdm = (0-hough_t[hough_t.length-2])/(mu[hough_t.length-1]-mu[hough_t.length-2])
+  factor = Math.sqrt(1-mu[hough_t.length-2]**2)/(sigma**2-mu[hough_t.length-2]**2)
+  hough_u[hough_t.length-1] = factor*(s/(1-mu[hough_t.length-2]**2)*hough_t[hough_t.length-2] - mu[hough_t.length-2]/sigma*dtdm)
+  hough_v[hough_t.length-1] = factor*(s*mu[hough_t.length-2]/(sigma*(1-mu[hough_t.length-2]**2))*hough_t[hough_t.length-2] - dtdm)
+
+  hough_u[60] = (hough_u[59]+hough_u[61])/2
+  hough_v[60] = (hough_v[59]+hough_v[61])/2
+  hough_u[120] = (hough_u[119]+hough_u[121])/2
+  hough_v[120] = (hough_v[119]+hough_v[121])/2
   document.getElementById('Hough_T').innerText = hough_t.join(', ')
+  document.getElementById('Hough_U').innerText = hough_u.join(', ')
+  document.getElementById('Hough_V').innerText = hough_v.join(', ')
+  const norm_factor = parseFloat((Math.max(...hough_u.map(n=>Math.abs(n)))/Math.max(...hough_t.map(n=>Math.abs(n)))).toExponential(0))
 
   ctx.clearRect(-plot_width/2-margin.left,-plot_height/2-margin.top,canvas.width,canvas.height)
   ctx.restore()
+  ctx.strokeStyle = 'black'
   ctx.lineWidth = 2
   ctx.strokeRect(scaleX(-90),scaleY(-3),scaleX(180),scaleY(6))
   for (let i=-90;i<=90;i+=10){
@@ -238,17 +263,44 @@ function plot_hough(s,flag_asymmetric,coef){
     ctx.moveTo(scaleX(-90),scaleY(i))
     ctx.lineTo(scaleX(90),scaleY(i))
     ctx.stroke()
-    ctx.fillText(String(i),scaleX(-94),scaleY(i))
+    ctx.textAlign = "right"
+    ctx.fillText(String(i),scaleX(-91),scaleY(i))
+    ctx.textAlign = "left"
+    ctx.fillStyle = 'red'
+    ctx.fillText(String(i*norm_factor),scaleX(91),scaleY(i))
+    ctx.fillStyle = 'black'
   }
 
   ctx.lineWidth = 3
   ctx.setLineDash([])
-  ctx.beginPath()
-  ctx.moveTo(scaleX(-90),scaleY(hough_t[0]))
-  for (let i=1;i<hough_t.length;i++){
-    ctx.lineTo(scaleX(i-90),scaleY(hough_t[i]))
+
+
+  if(document.getElementById('hough_t').checked){
+    ctx.beginPath()
+    ctx.moveTo(scaleX(-90),scaleY(hough_t[0]))
+    for (let i=1;i<hough_t.length;i++){
+      ctx.lineTo(scaleX(i-90),scaleY(hough_t[i]))
+    }
+    ctx.stroke()
   }
-  ctx.stroke()
+  if(document.getElementById('hough_u').checked){
+    ctx.strokeStyle = 'red'
+    ctx.beginPath()
+    ctx.moveTo(scaleX(-90),scaleY(hough_u[0]))
+    for (let i=1;i<hough_u.length;i++){
+      ctx.lineTo(scaleX(i-90),scaleY(hough_u[i]/norm_factor))
+    }
+    ctx.stroke()
+  }
+  if(document.getElementById('hough_v').checked){
+    ctx.strokeStyle = 'blue'
+    ctx.beginPath()
+    ctx.moveTo(scaleX(-90),scaleY(hough_v[0]))
+    for (let i=1;i<hough_v.length;i++){
+      ctx.lineTo(scaleX(i-90),scaleY(hough_v[i]/norm_factor))
+    }
+    ctx.stroke()
+  }
 
 }
 window.addEventListener('load',async () => {
