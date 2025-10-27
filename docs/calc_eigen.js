@@ -24,7 +24,7 @@ function calc_eigen(){
     M[r-s] = sigma**2*(r*(r+1)-s/sigma)/( r**2*(r+1)**2 )
            + (r+2)**2*(r+s+1)*(r-s+1)/( (r+1)**2*(2*r+3)*(2*r+1)*(s/sigma-(r+1)*(r+2)) )
     if(s/sigma-r*(r-1) == 0){
-      if (r/=s) M[r-s] = Number.MAX_VALUE
+      if (r!=s) M[r-s] = Number.MAX_VALUE
       // if r==s, the last term is omitted (=0)
     }else{
       M[r-s]+= (r-1)**2*(r**2-s**2)/( r**2*(4*r**2-1)*(s/sigma-r*(r-1)) )
