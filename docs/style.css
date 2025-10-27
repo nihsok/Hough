@@ -25,6 +25,9 @@
 .highlight {
   background-color: paleturquoise;
 }
+table {
+  font-size: small;
+}
 canvas {
   margin: 20px;
 }

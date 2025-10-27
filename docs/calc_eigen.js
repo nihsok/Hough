@@ -23,7 +23,12 @@ function calc_eigen(){
            /( (2*r+3)*Math.sqrt((2*r+1)*(2*r+5))*(s/sigma-(r+1)*(r+2)) )
     M[r-s] = sigma**2*(r*(r+1)-s/sigma)/( r**2*(r+1)**2 )
            + (r+2)**2*(r+s+1)*(r-s+1)/( (r+1)**2*(2*r+3)*(2*r+1)*(s/sigma-(r+1)*(r+2)) )
-    if(s/sigma-r*(r-1) != 0) M[r-s]+= (r-1)**2*(r**2-s**2)/( r**2*(4*r**2-1)*(s/sigma-r*(r-1)) )
+    if(s/sigma-r*(r-1) == 0){
+      if (r/=s) M[r-s] = Number.MAX_VALUE
+      // if r==s, the last term is omitted (=0)
+    }else{
+      M[r-s]+= (r-1)**2*(r**2-s**2)/( r**2*(4*r**2-1)*(s/sigma-r*(r-1)) )
+    }
   }
 
   //symmetric mode
@@ -37,7 +42,7 @@ function calc_eigen(){
       f1.set([i+1,i],L[2*i])
     }
     if (i<5){
-      const j = i===0 ? i+2 : i //rowspan for the first row
+      const j = i===0 ? i+2:i //rowspan for the first row
       row_F1[i].cells[j].innerText = M[i*2].toFixed(3)
       if(i===4) continue
       row_F1[i].cells[j+1].innerText = L[i*2].toFixed(3)
@@ -94,27 +99,21 @@ function calc_eigen(){
     currentindex = colIndex-(rowIndex>4 ? 1:3)
     plot_hough(s,sigma,0,a_sym[currentindex])
   })
-  // table_x1.addEventListener('mouseleave', e=>{
-  //   currentindex = null
-  //   e.target.closest('table').querySelectorAll("td").forEach(cell=>{
-  //     cell.classList.remove("highlight")
-  //   })
-  // })
 
-
-  //antisymmetric mode //the other is not renewed problem
+  //antisymmetric mode //the other is not renewed problem?
   const row_F2 = document.getElementsByName('F2_row')
   const len_asym = s%2==0 ? (rmax-s+2)/2-1 : (rmax-s+1)/2-1//?
   const f2 = math.zeros(len_asym,len_asym)
   for (let i=0;i<len_asym;i++){
-    f2.set([i,i],M[2*i+1])
+    f2.set([i,i],M[i*2+1])
     if (i+1<len_asym){
-      f2.set([i,i+1],L[2*i+1])
-      f2.set([i+1,i],L[2*i+1])
+      f2.set([i,i+1],L[i*2+1])
+      f2.set([i+1,i],L[i*2+1])
     }
     if (i<5){
-      const j = i===0 ? i+2 : i //rowspan for the first row
+      const j = i===0 ? i+2:i //rowspan for the first row
       row_F2[i].cells[j].innerText = M[i*2+1].toFixed(3)
+      if(M[i*2+1]>1000) row_F2[i].cells[j].innerText = M[i*2+1].toExponential(1)
       if(i===4) continue
       row_F2[i].cells[j+1].innerText = L[i*2+1].toFixed(3)
       row_F2[i+1].cells[i].innerText = L[i*2+1].toFixed(3)
@@ -127,12 +126,14 @@ function calc_eigen(){
 
   let a_asym = []
   let n_p_a = s-1
+  if (s==1 && sigma==0.5) n_p_a = -2
   let n_n_a = s-1
   for (let i=1;i<=12;i++){
     table_x2.rows[0].cells[i+2].innerHTML = 'Θ<sub>'+(lambda_x2[len_asym-i]>0 ? n_p_a+=2 : n_n_a-=2)+'</sub><sup>'+s+','+sigma+'</sup>'
     table_x2.rows[1].cells[i+2].innerText = (4*Math.PI*7/Math.sqrt(8000/(lambda_x2[len_asym-i]*ev2ed)-1)).toFixed(1)
     table_x2.rows[2].cells[i+2].innerText =(lambda_x2[len_asym-i]*ev2ed).toFixed(1)
     table_x2.rows[3].cells[i+2].innerText = lambda_x2[len_asym-i].toFixed(4)
+    if(lambda_x2[len_asym-i]>1000) table_x2.rows[3].cells[i+2].innerText = lambda_x2[len_asym-i].toExponential(1)
     if (lambda_x2[len_asym-i]<0){
       table_x2.rows[2].cells[i+2].innerHTML = '<i>'+table_x2.rows[2].cells[i+2].innerText+'</i>'
       table_x2.rows[3].cells[i+2].innerHTML = '<i>'+table_x2.rows[3].cells[i+2].innerText+'</i>'
@@ -201,35 +202,29 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
     for (let j=0;j<nlat;j++){
       hough[j]+= coef[flag_asymmetric===0 ? i:i-1]*slice[j]
     }
-    //console.log(i,coef[i-1],slice)
   }
   const hough_t = Array.from(hough.subarray(1).map(e => e*(flag_asymmetric === 0 ? 1:-1))).reverse().concat(Array.from(hough))
   const hough_u = []
   const hough_v = []
   const mu = Array.from(Array(nlat*2-1),(_,i)=>Math.sin(Math.PI*(i-90)/180))
 
-  let dtdm = (hough_t[1]-0)/(mu[1]-mu[0])
-  let factor = Math.sqrt(1-mu[1]**2)/(sigma**2-mu[1]**2)
-  hough_u[0] = factor*(s/(1-mu[1]**2)*hough_t[1] - mu[1]/sigma*dtdm)
-  hough_v[0] = factor*(s*mu[1]/(sigma*(1-mu[1]**2))*hough_t[1] - dtdm)
   for (let i=1;i<hough_t.length-1;i++){
     const dtdm = (hough_t[i+1]-hough_t[i-1])/(mu[i+1]-mu[i-1])
     const factor = Math.sqrt(1-mu[i]**2)/(sigma**2-mu[i]**2)
     hough_u[i] = factor*(s/(1-mu[i]**2)*hough_t[i] - mu[i]/sigma*dtdm)
     hough_v[i] = factor*(s*mu[i]/(sigma*(1-mu[i]**2))*hough_t[i] - dtdm)
   }
-  dtdm = (0-hough_t[hough_t.length-2])/(mu[hough_t.length-1]-mu[hough_t.length-2])
-  factor = Math.sqrt(1-mu[hough_t.length-2]**2)/(sigma**2-mu[hough_t.length-2]**2)
-  hough_u[hough_t.length-1] = factor*(s/(1-mu[hough_t.length-2]**2)*hough_t[hough_t.length-2] - mu[hough_t.length-2]/sigma*dtdm)
-  hough_v[hough_t.length-1] = factor*(s*mu[hough_t.length-2]/(sigma*(1-mu[hough_t.length-2]**2))*hough_t[hough_t.length-2] - dtdm)
-
+  hough_u[0] = 0
+  hough_v[0] = 0
+  hough_u[hough_t.length-1] = 0
+  hough_v[hough_t.length-1] = 0
   hough_u[60] = (hough_u[59]+hough_u[61])/2
   hough_v[60] = (hough_v[59]+hough_v[61])/2
   hough_u[120] = (hough_u[119]+hough_u[121])/2
   hough_v[120] = (hough_v[119]+hough_v[121])/2
   document.getElementById('Hough_T').innerText = hough_t.join(', ')
-  document.getElementById('Hough_U').innerText = hough_u.join(', ')
-  document.getElementById('Hough_V').innerText = hough_v.join(', ')
+  document.getElementById('Hough_U').innerText = 'NaN, ' + hough_u.slice(1,-1).join(', ') + ', NaN'
+  document.getElementById('Hough_V').innerText = 'NaN, ' + hough_v.slice(1,-1).join(', ') + ', NaN'
   const norm_factor = parseFloat((Math.max(...hough_u.map(n=>Math.abs(n)))/Math.max(...hough_t.map(n=>Math.abs(n)))).toExponential(0))
 
   ctx.clearRect(-plot_width/2-margin.left,-plot_height/2-margin.top,canvas.width,canvas.height)
@@ -256,6 +251,7 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
     ctx.moveTo(scaleX(i),scaleY(-3))
     ctx.lineTo(scaleX(i),scaleY(3))
     ctx.stroke()
+    ctx.textAlign = "center"
     ctx.fillText(String(i).padStart(3,' ')+'°',scaleX(i),scaleY(-3.3))
   }
   for (let i=-2;i<3;i+=1){
@@ -267,7 +263,7 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
     ctx.fillText(String(i),scaleX(-91),scaleY(i))
     ctx.textAlign = "left"
     ctx.fillStyle = 'red'
-    ctx.fillText(String(i*norm_factor),scaleX(91),scaleY(i))
+    ctx.fillText(String(i*norm_factor),scaleX(92),scaleY(i))
     ctx.fillStyle = 'black'
   }
 
@@ -286,8 +282,8 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   if(document.getElementById('hough_u').checked){
     ctx.strokeStyle = 'red'
     ctx.beginPath()
-    ctx.moveTo(scaleX(-90),scaleY(hough_u[0]))
-    for (let i=1;i<hough_u.length;i++){
+    ctx.moveTo(scaleX(-90),scaleY(hough_u[1]/norm_factor))
+    for (let i=1;i<hough_u.length-1;i++){
       ctx.lineTo(scaleX(i-90),scaleY(hough_u[i]/norm_factor))
     }
     ctx.stroke()
@@ -295,8 +291,8 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   if(document.getElementById('hough_v').checked){
     ctx.strokeStyle = 'blue'
     ctx.beginPath()
-    ctx.moveTo(scaleX(-90),scaleY(hough_v[0]))
-    for (let i=1;i<hough_v.length;i++){
+    ctx.moveTo(scaleX(-90),scaleY(hough_v[1]/norm_factor))
+    for (let i=1;i<hough_v.length-1;i++){
       ctx.lineTo(scaleX(i-90),scaleY(hough_v[i]/norm_factor))
     }
     ctx.stroke()
