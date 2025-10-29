@@ -180,7 +180,7 @@ async function loadLegendre(){
 }
 
 const canvas = document.getElementById("canvas")
-const margin = {bottom:10,top:10,left:20,right:50}
+const margin = {bottom:15,top:10,left:20,right:50}
 const plot_height = canvas.height - margin.left - margin.top
 const plot_width = canvas.width - margin.left - margin.right
 const scaleX = (x) => x*plot_width/180
@@ -267,9 +267,8 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
     ctx.fillStyle = 'black'
   }
 
-  ctx.lineWidth = 3
+  ctx.lineWidth = 5
   ctx.setLineDash([])
-
 
   if(document.getElementById('hough_t').checked){
     ctx.beginPath()
