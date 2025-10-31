@@ -60,7 +60,8 @@ function calc_eigen(){
   let n_n = s
   for (let i=1;i<=12;i++){
     table_x1.rows[0].cells[i+2].innerHTML = 'Θ<sub>'+(lambda_x1[len_sym-i]>0 ? n_p+=2 : n_n-=2)+'</sub><sup>'+s+','+sigma+'</sup>'
-    table_x1.rows[1].cells[i+2].innerText = (4*Math.PI*7/Math.sqrt(8000/(lambda_x1[len_sym-i]*ev2ed)-1)).toFixed(1)
+    table_x1.rows[1].cells[i+2].innerText = (4*Math.PI*7/Math.sqrt(Math.abs(8000/(lambda_x1[len_sym-i]*ev2ed)-1))).toFixed(1)
+    if (8000/(lambda_x1[len_sym-i]*ev2ed)<1) table_x1.rows[1].cells[i+2].innerText+='i'
     table_x1.rows[2].cells[i+2].innerText =(lambda_x1[len_sym-i]*ev2ed).toFixed(1)
     table_x1.rows[3].cells[i+2].innerText = lambda_x1[len_sym-i].toFixed(4)
     if (lambda_x1[len_sym-i]<0){
@@ -130,10 +131,11 @@ function calc_eigen(){
   let n_n_a = s-1
   for (let i=1;i<=12;i++){
     table_x2.rows[0].cells[i+2].innerHTML = 'Θ<sub>'+(lambda_x2[len_asym-i]>0 ? n_p_a+=2 : n_n_a-=2)+'</sub><sup>'+s+','+sigma+'</sup>'
-    table_x2.rows[1].cells[i+2].innerText = (4*Math.PI*7/Math.sqrt(8000/(lambda_x2[len_asym-i]*ev2ed)-1)).toFixed(1)
+    table_x2.rows[1].cells[i+2].innerText = (4*Math.PI*7/Math.sqrt(Math.abs(8000/(lambda_x2[len_asym-i]*ev2ed)-1))).toFixed(1)
+    if (8000/(lambda_x2[len_asym-i]*ev2ed)<1) table_x2.rows[1].cells[i+2].innerText+='i'
     table_x2.rows[2].cells[i+2].innerText =(lambda_x2[len_asym-i]*ev2ed).toFixed(1)
     table_x2.rows[3].cells[i+2].innerText = lambda_x2[len_asym-i].toFixed(4)
-    if(lambda_x2[len_asym-i]>1000) table_x2.rows[3].cells[i+2].innerText = lambda_x2[len_asym-i].toExponential(1)
+    if (lambda_x2[len_asym-i]>1000) table_x2.rows[3].cells[i+2].innerText = lambda_x2[len_asym-i].toExponential(1)
     if (lambda_x2[len_asym-i]<0){
       table_x2.rows[2].cells[i+2].innerHTML = '<i>'+table_x2.rows[2].cells[i+2].innerText+'</i>'
       table_x2.rows[3].cells[i+2].innerHTML = '<i>'+table_x2.rows[3].cells[i+2].innerText+'</i>'
@@ -208,20 +210,23 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   const hough_v = []
   const mu = Array.from(Array(nlat*2-1),(_,i)=>Math.sin(Math.PI*(i-90)/180))
 
+  let singular = -1
   for (let i=1;i<hough_t.length-1;i++){
     const dtdm = (hough_t[i+1]-hough_t[i-1])/(mu[i+1]-mu[i-1])
     const factor = Math.sqrt(1-mu[i]**2)/(sigma**2-mu[i]**2)
     hough_u[i] = factor*(s/(1-mu[i]**2)*hough_t[i] - mu[i]/sigma*dtdm)
     hough_v[i] = factor*(s*mu[i]/(sigma*(1-mu[i]**2))*hough_t[i] - dtdm)
+    if(Math.abs(sigma**2-mu[i]**2)<1e-10) singular=i
   }
   hough_u[0] = 0
   hough_v[0] = 0
   hough_u[hough_t.length-1] = 0
   hough_v[hough_t.length-1] = 0
-  hough_u[60] = (hough_u[59]+hough_u[61])/2
-  hough_v[60] = (hough_v[59]+hough_v[61])/2
-  hough_u[120] = (hough_u[119]+hough_u[121])/2
-  hough_v[120] = (hough_v[119]+hough_v[121])/2
+  hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
+  hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
+  singular = nlat*2-singular-2
+  hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
+  hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
   document.getElementById('Hough_T').innerText = hough_t.join(', ')
   document.getElementById('Hough_U').innerText = 'NaN, ' + hough_u.slice(1,-1).join(', ') + ', NaN'
   document.getElementById('Hough_V').innerText = 'NaN, ' + hough_v.slice(1,-1).join(', ') + ', NaN'
@@ -267,7 +272,7 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
     ctx.fillStyle = 'black'
   }
 
-  ctx.lineWidth = 5
+  ctx.lineWidth = 4
   ctx.setLineDash([])
 
   if(document.getElementById('hough_t').checked){
