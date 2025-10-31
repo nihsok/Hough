@@ -222,11 +222,13 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   hough_v[0] = 0
   hough_u[hough_t.length-1] = 0
   hough_v[hough_t.length-1] = 0
-  hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
-  hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
-  singular = nlat*2-singular-2
-  hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
-  hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
+  if (singular>=0){
+    hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
+    hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
+    singular = nlat*2-singular-2
+    hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
+    hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
+  }
   document.getElementById('Hough_T').innerText = hough_t.join(', ')
   document.getElementById('Hough_U').innerText = 'NaN, ' + hough_u.slice(1,-1).join(', ') + ', NaN'
   document.getElementById('Hough_V').innerText = 'NaN, ' + hough_v.slice(1,-1).join(', ') + ', NaN'
