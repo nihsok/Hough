@@ -192,6 +192,7 @@ ctx.translate(plot_width/2+margin.left,plot_height/2+margin.top)
 ctx.font = '20px sans-serif'
 ctx.textAlign = 'center'
 ctx.textBaseline = 'middle'
+ctx.lineCap = 'round'
 ctx.save()
 
 function plot_hough(s,sigma,flag_asymmetric,coef){
@@ -214,25 +215,21 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   for (let i=1;i<hough_t.length-1;i++){
     const dtdm = (hough_t[i+1]-hough_t[i-1])/(mu[i+1]-mu[i-1])
     const factor = Math.sqrt(1-mu[i]**2)/(sigma**2-mu[i]**2)
-    hough_u[i] = factor*(s/(1-mu[i]**2)*hough_t[i] - mu[i]/sigma*dtdm)
-    hough_v[i] = factor*(s*mu[i]/(sigma*(1-mu[i]**2))*hough_t[i] - dtdm)
-    if(Math.abs(sigma**2-mu[i]**2)<1e-10) singular=i
+    hough_u[i-1] = factor*(s/(1-mu[i]**2)*hough_t[i] - mu[i]/sigma*dtdm)
+    hough_v[i-1] = factor*(s*mu[i]/(sigma*(1-mu[i]**2))*hough_t[i] - dtdm)
+    if(Math.abs(sigma**2-mu[i]**2)<1e-10) singular = i-1
   }
-  hough_u[0] = 0
-  hough_v[0] = 0
-  hough_u[hough_t.length-1] = 0
-  hough_v[hough_t.length-1] = 0
   if (singular>=0){
     hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
     hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
-    singular = nlat*2-singular-2
+    singular = nlat*2-singular-4
     hough_u[singular] = (hough_u[singular-1]+hough_u[singular+1])/2
-    hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2
+    hough_v[singular] = (hough_v[singular-1]+hough_v[singular+1])/2//
   }
-  document.getElementById('Hough_T').innerText = hough_t.join(', ')
-  document.getElementById('Hough_U').innerText = 'NaN, ' + hough_u.slice(1,-1).join(', ') + ', NaN'
-  document.getElementById('Hough_V').innerText = 'NaN, ' + hough_v.slice(1,-1).join(', ') + ', NaN'
   const norm_factor = parseFloat((Math.max(...hough_u.map(n=>Math.abs(n)))/Math.max(...hough_t.map(n=>Math.abs(n)))).toExponential(0))
+  document.getElementById('Hough_T').innerText = hough_t.join(', ')
+  document.getElementById('Hough_U').innerText = 'NaN, ' + hough_u.join(', ') + ', NaN'
+  document.getElementById('Hough_V').innerText = 'NaN, ' + hough_v.join(', ') + ', NaN'
 
   ctx.clearRect(-plot_width/2-margin.left,-plot_height/2-margin.top,canvas.width,canvas.height)
   ctx.restore()
@@ -288,18 +285,18 @@ function plot_hough(s,sigma,flag_asymmetric,coef){
   if(document.getElementById('hough_u').checked){
     ctx.strokeStyle = 'red'
     ctx.beginPath()
-    ctx.moveTo(scaleX(-90),scaleY(hough_u[1]/norm_factor))
-    for (let i=1;i<hough_u.length-1;i++){
-      ctx.lineTo(scaleX(i-90),scaleY(hough_u[i]/norm_factor))
+    ctx.moveTo(scaleX(-89),scaleY(hough_u[0]/norm_factor))
+    for (let i=1;i<hough_u.length;i++){
+      ctx.lineTo(scaleX(i-89),scaleY(hough_u[i-1]/norm_factor))
     }
     ctx.stroke()
   }
   if(document.getElementById('hough_v').checked){
     ctx.strokeStyle = 'blue'
     ctx.beginPath()
-    ctx.moveTo(scaleX(-90),scaleY(hough_v[1]/norm_factor))
-    for (let i=1;i<hough_v.length-1;i++){
-      ctx.lineTo(scaleX(i-90),scaleY(hough_v[i]/norm_factor))
+    ctx.moveTo(scaleX(-89),scaleY(hough_v[0]/norm_factor))
+    for (let i=1;i<hough_v.length;i++){
+      ctx.lineTo(scaleX(i-89),scaleY(hough_v[i]/norm_factor))
     }
     ctx.stroke()
   }
